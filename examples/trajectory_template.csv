@@ -1,0 +1,4 @@
+time_s,north_m,east_m,down_m,v_north_mps,v_east_mps,v_down_mps,q1,q2,q3,q4,p_rad_s,q_rad_s,r_rad_s,temp_c
+0,0,0,0,0,0,-100,1,0,0,0,0,0,0,25
+1,0,0,-100,0,0,-100,1,0,0,0,0,0,0,25
+2,5,0,-200,5,0,-100,1,0,0,0,0,0,0.5,24
