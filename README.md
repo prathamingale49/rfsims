@@ -69,6 +69,39 @@ There is also a selectable **Legacy MC run (test model)** trajectory. It is a 5 
 - First-order Gaussian-in-dB uncertainty envelope
 - Clear distinction between LNA NF and system NF
 
+## Two-board antenna cant study
+
+The antenna study is separate from the Streamlit app:
+
+```powershell
+python antenna_pattern_3d.py --band 915
+python antenna_link_geometry.py --band 915
+```
+
+`antenna_pattern_3d.py` writes an interactive six-panel 3D view with the rocket body, the two complementary PCB boresights, individual A/B lobes, the switched `max(A, B)` envelope, 0/30/45/60 degree aft-cant comparisons, and the ground-antenna pattern.
+
+`antenna_link_geometry.py` runs the legacy MC trajectory (or another CSV) through the complete rocket/ground geometry. It writes an interactive study, a moving-lobe animation, and a per-timestep results CSV with A/B gain, selected antenna, received power, and link margin for every cant angle. It also compares arbitrary-roll worst cases and the roll/tilt envelope. Run `python antenna_link_geometry.py --help` for trajectory, attitude, RF, tracked/fixed ground pointing, and mounting options.
+
+The built-in patterns are documented parametric stand-ins:
+
+- Taoglas `ISMP.915.35.6.A.02`: 2.51 dBic peak on its 70 x 70 mm reference ground plane.
+- Pulse `W3229`: 6.5 dBic peak, approximately 90/80 degree beamwidth, on its 70 x 70 mm reference ground plane.
+- 915 MHz ground station: 17.5 dBi tracked-Yagi placeholder carried over from the existing link budget.
+- 2.4 GHz ground antenna: configurable placeholder until the actual ground antenna is picked.
+
+The patch rear/edge response and 915 MHz beamwidth are assumptions, not extracted chamber data. Both scripts accept a measured or manufacturer pattern cut with `--pattern-csv`, `--flight-pattern-csv`, or `--ground-pattern-csv`. The CSV format is:
+
+```text
+theta_deg,gain_dbic
+0,2.51
+...
+180,-12.0
+```
+
+The first implementation treats that cut as axisymmetric. `AxisymmetricPattern` is isolated in `antenna_models.py` so it can later be replaced with a full measured `G(theta, phi)` interpolator without changing the flight/link simulation.
+
+Manufacturer references: [Taoglas ISMP.915 datasheet](https://www.taoglas.com/datasheets/ISMP.915.35.6.A.02.pdf), [Taoglas product page](https://www.taoglas.com/product/915-ism-low-profile-pin-mount-ceramic-patch-antenna/), and [Pulse W3229 datasheet](https://productfinder.pulseelectronics.com/api/open/part-attachments/datasheet/w3229).
+
 ## LR2021 data provenance
 
 The sensitivity tables and LoRa configuration notes are transcribed from **Semtech LR2021/LR2022/LR2012 Final Datasheet Rev. 2.1 (April 2026)**. The published sensitivities are characterization values at **1% PER with 64-byte packets** and CR 4/5. Replace them with measured end-to-end values once the LR2021 EVKs and final RF hardware are characterized.

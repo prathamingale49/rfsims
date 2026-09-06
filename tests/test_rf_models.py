@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 from rf_models import doppler_shift_hz, friis_cascade_noise_figure_db, fspl_db, lora_raw_bitrate_bps, lora_time_on_air_s, mismatch_loss_db, ned_geometry
+from antenna_models import PATCH_915, antenna_boresights, attitude_body_to_ned, diversity_gains_dbic, direction_to_ground_body
 
 
 def test_vswr_2_mismatch_loss():
@@ -47,3 +48,25 @@ def test_legacy_mc_fixture_has_required_ned_state_columns():
     assert required <= set(frame.columns)
     assert len(frame) > 5_000
     assert frame["time_s"].is_monotonic_increasing
+
+
+def test_aft_cant_improves_gain_directly_below_vertical_rocket():
+    ground_direction_body = [0.0, 0.0, -1.0]
+    radial = float(diversity_gains_dbic(ground_direction_body, 0.0, PATCH_915)[2])
+    canted = float(diversity_gains_dbic(ground_direction_body, 45.0, PATCH_915)[2])
+    assert canted > radial + 15.0
+
+
+def test_complementary_boresights_are_unit_and_aft_canted():
+    bore_a, bore_b = antenna_boresights(45.0)
+    assert math.isclose(float((bore_a @ bore_a) ** 0.5), 1.0)
+    assert math.isclose(float((bore_b @ bore_b) ** 0.5), 1.0)
+    assert math.isclose(bore_a[0], -bore_b[0])
+    assert bore_a[2] < 0 and math.isclose(bore_a[2], bore_b[2])
+
+
+def test_vertical_body_frame_points_ground_toward_minus_z():
+    matrix = attitude_body_to_ned(0.0, 0.0, 123.0)
+    direction, distance = direction_to_ground_body([0, 0, -1000], [0, 0, 0], matrix)
+    assert math.isclose(distance, 1000.0)
+    assert direction[2] < -0.999999
