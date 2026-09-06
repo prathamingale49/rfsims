@@ -202,8 +202,11 @@ def synthetic_trajectory():
 def trajectory_analysis(band, payload_bytes, required_packet_rate_hz):
     st.subheader("Flight trajectory / geometry")
     st.caption("Ready for the sims team's NED state-vector export. The synthetic trajectory is only a UI/RF pipeline demo.")
-    source = st.radio("Trajectory source", ["Synthetic demo", "Upload CSV"], horizontal=True)
-    if source == "Upload CSV":
+    source = st.radio("Trajectory source", ["Synthetic demo", "Legacy MC run (test model)", "Upload CSV"], horizontal=True)
+    if source == "Legacy MC run (test model)":
+        df = pd.read_csv(Path("examples/mcrun1_legacy_trajectory.csv"))
+        st.info("Legacy, lower-apogee Monte Carlo trajectory from the prior vehicle. Use this to exercise the RF pipeline, not as the current vehicle prediction. Position is treated as N/E/D; quaternion order/direction still need confirmation from sims.")
+    elif source == "Upload CSV":
         uploaded = st.file_uploader("Trajectory CSV", type="csv", key="traj-upload")
         try: st.download_button("Download expected CSV template", Path("examples/trajectory_template.csv").read_bytes(), "trajectory_template.csv", "text/csv")
         except Exception: pass

@@ -61,6 +61,8 @@ The app can derive slant range, ground-station azimuth/elevation, received power
 
 A synthetic trajectory generator is included only to exercise the UI before the real sim export exists. It is **not** a flight-dynamics model.
 
+There is also a selectable **Legacy MC run (test model)** trajectory. It is a 5 Hz, event-preserving export of the previous vehicle's Monte Carlo result, with N/E/D position, velocity, quaternion, angular-rate, and temperature fields. The raw MATLAB file is deliberately not in Git. Rebuild the fixture with `examples/import_mcrun1_mat.py` and use the legacy run only to exercise the RF/trajectory pipeline: its lower apogee and quaternion convention are not final-flight assumptions.
+
 ### Receiver chain / uncertainty
 
 - Friis cascaded noise-figure calculator

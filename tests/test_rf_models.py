@@ -1,4 +1,5 @@
 import math
+from pathlib import Path
 
 import pandas as pd
 
@@ -35,3 +36,14 @@ def test_friis_passive_loss_before_lna_hurts_nf():
     stages = pd.DataFrame([{"gain_db": -5.0, "nf_db": 5.0}, {"gain_db": 22.8, "nf_db": 0.66}])
     nf = friis_cascade_noise_figure_db(stages)
     assert 5.5 < nf < 6.5
+
+
+def test_legacy_mc_fixture_has_required_ned_state_columns():
+    import pandas as pd
+
+    fixture = Path(__file__).parents[1] / "examples" / "mcrun1_legacy_trajectory.csv"
+    frame = pd.read_csv(fixture)
+    required = {"time_s", "north_m", "east_m", "down_m", "v_north_mps", "v_east_mps", "v_down_mps", "q1", "q2", "q3", "q4", "p_rad_s", "q_rad_s", "r_rad_s", "temp_c"}
+    assert required <= set(frame.columns)
+    assert len(frame) > 5_000
+    assert frame["time_s"].is_monotonic_increasing
